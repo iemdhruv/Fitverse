@@ -2,7 +2,7 @@ const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('output-canvas');
 const canvasCtx = canvasElement.getContext('2d');
 
-// UI Selectors
+// Core Dashboard DOM selectors
 const repCounter = document.getElementById('rep-count');
 const angleDisplay = document.getElementById('joint-angle');
 const angleLabel = document.getElementById('angle-label');
@@ -10,13 +10,13 @@ const feedbackText = document.getElementById('feedback-text');
 const feedbackCard = document.getElementById('feedback-card');
 const progressBar = document.getElementById('rep-progress-bar');
 
-// Circular Progress Meter Layout Configuration
+// Circular Progress Dimensions calculation logic
 const radius = progressBar.r.baseVal.value;
 const circumference = radius * 2 * Math.PI;
 progressBar.style.strokeDasharray = `${circumference} ${circumference}`;
 progressBar.style.strokeDashoffset = circumference;
 
-// Core Runtime Configurations
+// Core Framework Runtime parameters
 let currentExercise = 'bicep_curl';
 let count = 0;
 let position = null;
@@ -24,42 +24,43 @@ let lastSpokenFeedback = "";
 let totalCaloriesConsumed = 0;
 let loggedFoods = [];
 
-// Dynamic Exercise State Configurations Object
+// Static Biometric evaluation definitions matrix
 const exerciseRules = {
     bicep_curl: { name: "ELBOW JOINTS", nodes: [11, 13, 15], extension: 160, flexion: 45 },
     squat: { name: "KNEE JOINTS", nodes: [23, 25, 27], extension: 160, flexion: 90 }
 };
 
-// Personalized Workouts Dataset Matrix
 const routinePlans = {
     fat_loss: `
-        <p><strong>DAY 1:</strong> AI Squat Automation (4 Sets x 20 Reps)</p>
-        <p><strong>DAY 2:</strong> High Intensity Bicep Flexion (4 Sets x 25 Reps)</p>
-        <p><strong>DAY 3:</strong> Core Stabilization & Cardio Drills (30 Mins)</p>
-        <p><strong>METRIC TARGET:</strong> High velocity tracking to maximize calorie burn.</p>
+        <p><strong>DAY 1:</strong> AI Squat Matrix (4 Sets x 20 Reps)</p>
+        <p><strong>DAY 2:</strong> High Velocity Bicep Flexion (4 Sets x 25 Reps)</p>
+        <p><strong>DAY 3:</strong> Metabolic Acceleration Drills (30 Mins)</p>
+        <p><strong>SYSTEM METRIC:</strong> Target rapid velocity to maximize output.</p>
     `,
     muscle_gain: `
-        <p><strong>DAY 1:</strong> Progressive Load Squat Layer (4 Sets x 10 Hyper-Controlled Reps)</p>
+        <p><strong>DAY 1:</strong> Progressive Tension Squat Layer (4 Sets x 10 Hyper-Controlled Reps)</p>
         <p><strong>DAY 2:</strong> Mechanical Tension Bicep Curls (4 Sets x 12 Slow Reps)</p>
-        <p><strong>DAY 3:</strong> Biomechanical Compound Lifting (Chest/Back focuses)</p>
-        <p><strong>METRIC TARGET:</strong> Slow, precise form mapping to maximize target strain.</p>
+        <p><strong>DAY 3:</strong> Structural Compound Loading (Compound focuses)</p>
+        <p><strong>SYSTEM METRIC:</strong> Prioritize slow, steady movement vector synchronization.</p>
     `
 };
 
-// UI Live Internal Digital Clock Loop
+// Continuous clock tick callback function execution routing
 setInterval(() => {
     document.getElementById('system-time').textContent = new Date().toUTCString().replace("GMT", "UTC");
 }, 1000);
 
-// App Initialize Lifecycle Hook
+// Initialize application state hook
 window.onload = function() {
     loadPersonalizedPlan('fat_loss');
     initializeLocalStorageLogs();
+    syncAnalyticsDashboard();
+    loadProfileManifest();
 };
 
-/* --- Navigation Tab Switcher Logic --- */
+/* --- 5-Page Navigation Tab Management Engine --- */
 function switchModule(moduleName) {
-    const modules = ['vision', 'nutrition', 'routines'];
+    const modules = ['vision', 'nutrition', 'routines', 'analytics', 'config'];
     modules.forEach(m => {
         const container = document.getElementById(`module-${m}-container`);
         const tabButton = document.getElementById(`tab-${m}`);
@@ -73,10 +74,11 @@ function switchModule(moduleName) {
             tabButton.classList.remove('active');
         }
     });
-    triggerAudioFeedback(`Accessing ${moduleName} framework.`);
+    syncAnalyticsDashboard();
+    triggerAudioFeedback(`Accessing ${moduleName} module.`);
 }
 
-/* --- Calorie Engine Data Ingestion --- */
+/* --- Calorie Engine Storage Logic --- */
 function initializeLocalStorageLogs() {
     const cachedLogs = localStorage.getItem('fitverse_food_registry');
     if (cachedLogs) {
@@ -103,7 +105,8 @@ function logFoodItem(event) {
     calInput.value = '';
     
     rebuildFoodDOMList();
-    triggerAudioFeedback(`Logged ${entry.calories} kilocalories.`);
+    syncAnalyticsDashboard();
+    triggerAudioFeedback(`Logged ${entry.calories} calories.`);
 }
 
 function rebuildFoodDOMList() {
@@ -115,22 +118,60 @@ function rebuildFoodDOMList() {
         totalCaloriesConsumed += item.calories;
         const li = document.createElement('li');
         li.className = 'hud-list-item';
-        li.innerHTML = `<span>${item.name}</span> <span style="color: #00f2fe">${item.calories} KCAL</span>`;
+        li.innerHTML = `<span>${item.name}</span> <span style="color: #00f5a0">${item.calories} KCAL</span>`;
         targetList.appendChild(li);
     });
     
     document.getElementById('total-calories').textContent = totalCaloriesConsumed;
 }
 
-/* --- Routine Ingestion Logic --- */
+/* --- Routine Handling Logic --- */
 function loadPersonalizedPlan(type) {
     document.getElementById('routine-plan-content').innerHTML = routinePlans[type];
     document.getElementById('plan-fatloss').classList.toggle('active', type === 'fat_loss');
     document.getElementById('plan-muscle').classList.toggle('active', type === 'muscle_gain');
-    triggerAudioFeedback(`Loading ${type.replace('_', ' ')} schematics.`);
+    triggerAudioFeedback(`Loading ${type.replace('_', ' ')} parameters.`);
 }
 
-/* --- Vision Tracking Framework Core --- */
+/* --- Analytics Reporting Synchronization (New) --- */
+function syncAnalyticsDashboard() {
+    document.getElementById('analytics-total-reps').textContent = count;
+    document.getElementById('analytics-calories').textContent = `${totalCaloriesConsumed} kcal`;
+}
+
+/* --- User Profile Management Core (New) --- */
+function saveProfileConfig(event) {
+    event.preventDefault();
+    const nameVal = document.getElementById('user-name-input').value.toUpperCase();
+    const weightVal = document.getElementById('user-weight-input').value;
+    
+    const userManifest = { name: nameVal, weight: weightVal };
+    localStorage.setItem('fitverse_operator_manifest', JSON.stringify(userManifest));
+    
+    renderProfileDisplay(userManifest.name, userManifest.weight);
+    triggerAudioFeedback(`Profile initialized for operator ${nameVal}.`);
+}
+
+function loadProfileManifest() {
+    const profileData = localStorage.getItem('fitverse_operator_manifest');
+    if (profileData) {
+        const parsed = JSON.parse(profileData);
+        document.getElementById('user-name-input').value = parsed.name;
+        document.getElementById('user-weight-input').value = parsed.weight;
+        renderProfileDisplay(parsed.name, parsed.weight);
+    }
+}
+
+function renderProfileDisplay(name, weight) {
+    document.getElementById('profile-display-data').innerHTML = `
+        <p><strong>OPERATOR:</strong> <span class="text-magenta">${name}</span></p>
+        <p><strong>MASS UNIT:</strong> ${weight} KG</p>
+        <p><strong>AUDIO ENGINE:</strong> TEXT-TO-SPEECH ENABLED</p>
+        <p><strong>VISION TRACKER:</strong> MEDIAPIPE MODEL V1</p>
+    `;
+}
+
+/* --- Biometric Real-Time Vision Mesh Tracking Loop --- */
 function setExercise(type) {
     currentExercise = type;
     count = 0;
@@ -141,7 +182,7 @@ function setExercise(type) {
     
     document.getElementById('btn-curl').classList.toggle('active', type === 'bicep_curl');
     document.getElementById('btn-squat').classList.toggle('active', type === 'squat');
-    triggerAudioFeedback(`Switching tracking parameters to ${type.replace('_', ' ')} logic matrix.`);
+    triggerAudioFeedback(`Switching matching limits to ${type.replace('_', ' ')} layer.`);
 }
 
 function updateProgressBar(percent) {
@@ -180,7 +221,6 @@ function calculateAngle(p1, p2, p3) {
 }
 
 function onResults(results) {
-    // Only compile pose loops if the Vision module tab workspace is actively visible
     if (!document.getElementById('module-vision-container').classList.contains('module-visible')) return;
 
     if (!results.poseLandmarks) {
@@ -228,6 +268,7 @@ function onResults(results) {
             repCounter.textContent = count;
             playBeepSound();
             updateProgressBar(100);
+            syncAnalyticsDashboard();
             feedbackText.textContent = `CYCLE SUCCESS: COUNT ${count}`;
             feedbackText.className = "status-good";
             feedbackCard.className = "metric-card feedback-card status-good-border";
