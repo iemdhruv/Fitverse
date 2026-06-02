@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitverse AI - Live Posture Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Fitverse AI Smart Trainer</h1>
+            <p>Real-time computer vision form analysis and repetition tracking.</p>
+        </header>
+
+        <div class="main-layout">
+            
+            <div class="video-box">
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="output-canvas"></canvas>
+            </div>
+
+            <div class="dashboard">
+                <div class="metric-card">
+                    <h3>Active Repetitions</h3>
+                    <div id="rep-count" class="counter">0</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>Calculated Joint Angle</h3>
+                    <div id="joint-angle" class="angle-display">0°</div>
+                </div>
+                
+                <div class="metric-card feedback-card">
+                    <h3>Coach Feedback</h3>
+                    <div id="feedback-text" class="status-good">Aligning Engine...</div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
