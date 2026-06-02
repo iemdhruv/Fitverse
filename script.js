@@ -1,322 +1,265 @@
-:root {
-    --bg-darker: #05070b;
-    --bg-card: rgba(10, 15, 26, 0.75);
-    --border-neon: rgba(0, 242, 254, 0.15);
-    --accent-blue: #00f2fe;
-    --accent-neon: #4facfe;
-    --accent-coral: #ff5f6d;
-    --accent-warn: #ffad33;
-    --text-primary: #f0f6fc;
-    --text-secondary: #5865f2;
-    --neon-glow: 0 0 20px rgba(0, 242, 254, 0.4);
+const videoElement = document.getElementById('webcam');
+const canvasElement = document.getElementById('output-canvas');
+const canvasCtx = canvasElement.getContext('2d');
+
+// UI Selectors
+const repCounter = document.getElementById('rep-count');
+const angleDisplay = document.getElementById('joint-angle');
+const angleLabel = document.getElementById('angle-label');
+const feedbackText = document.getElementById('feedback-text');
+const feedbackCard = document.getElementById('feedback-card');
+const progressBar = document.getElementById('rep-progress-bar');
+
+// Circular Progress Meter Layout Configuration
+const radius = progressBar.r.baseVal.value;
+const circumference = radius * 2 * Math.PI;
+progressBar.style.strokeDasharray = `${circumference} ${circumference}`;
+progressBar.style.strokeDashoffset = circumference;
+
+// Core Runtime Configurations
+let currentExercise = 'bicep_curl';
+let count = 0;
+let position = null;
+let lastSpokenFeedback = "";
+let totalCaloriesConsumed = 0;
+let loggedFoods = [];
+
+// Dynamic Exercise State Configurations Object
+const exerciseRules = {
+    bicep_curl: { name: "ELBOW JOINTS", nodes: [11, 13, 15], extension: 160, flexion: 45 },
+    squat: { name: "KNEE JOINTS", nodes: [23, 25, 27], extension: 160, flexion: 90 }
+};
+
+// Personalized Workouts Dataset Matrix
+const routinePlans = {
+    fat_loss: `
+        <p><strong>DAY 1:</strong> AI Squat Automation (4 Sets x 20 Reps)</p>
+        <p><strong>DAY 2:</strong> High Intensity Bicep Flexion (4 Sets x 25 Reps)</p>
+        <p><strong>DAY 3:</strong> Core Stabilization & Cardio Drills (30 Mins)</p>
+        <p><strong>METRIC TARGET:</strong> High velocity tracking to maximize calorie burn.</p>
+    `,
+    muscle_gain: `
+        <p><strong>DAY 1:</strong> Progressive Load Squat Layer (4 Sets x 10 Hyper-Controlled Reps)</p>
+        <p><strong>DAY 2:</strong> Mechanical Tension Bicep Curls (4 Sets x 12 Slow Reps)</p>
+        <p><strong>DAY 3:</strong> Biomechanical Compound Lifting (Chest/Back focuses)</p>
+        <p><strong>METRIC TARGET:</strong> Slow, precise form mapping to maximize target strain.</p>
+    `
+};
+
+// UI Live Internal Digital Clock Loop
+setInterval(() => {
+    document.getElementById('system-time').textContent = new Date().toUTCString().replace("GMT", "UTC");
+}, 1000);
+
+// App Initialize Lifecycle Hook
+window.onload = function() {
+    loadPersonalizedPlan('fat_loss');
+    initializeLocalStorageLogs();
+};
+
+/* --- Navigation Tab Switcher Logic --- */
+function switchModule(moduleName) {
+    const modules = ['vision', 'nutrition', 'routines'];
+    modules.forEach(m => {
+        const container = document.getElementById(`module-${m}-container`);
+        const tabButton = document.getElementById(`tab-${m}`);
+        if (m === moduleName) {
+            container.classList.add('module-visible');
+            container.classList.remove('module-hidden');
+            tabButton.classList.add('active');
+        } else {
+            container.classList.remove('module-visible');
+            container.classList.add('module-hidden');
+            tabButton.classList.remove('active');
+        }
+    });
+    triggerAudioFeedback(`Accessing ${moduleName} framework.`);
 }
 
-body {
-    margin: 0;
-    font-family: 'Courier New', Courier, monospace;
-    background: radial-gradient(circle at center, #0b1528 0%, var(--bg-darker) 100%);
-    color: var(--text-primary);
-    min-height: 100vh;
+/* --- Calorie Engine Data Ingestion --- */
+function initializeLocalStorageLogs() {
+    const cachedLogs = localStorage.getItem('fitverse_food_registry');
+    if (cachedLogs) {
+        loggedFoods = JSON.parse(cachedLogs);
+        rebuildFoodDOMList();
+    }
 }
 
-.app-container {
-    max-width: 1350px;
-    margin: 0 auto;
-    padding: 25px;
+function logFoodItem(event) {
+    event.preventDefault();
+    const nameInput = document.getElementById('food-name');
+    const calInput = document.getElementById('food-calories');
+    
+    const entry = {
+        id: Date.now(),
+        name: nameInput.value.toUpperCase(),
+        calories: parseInt(calInput.value)
+    };
+    
+    loggedFoods.push(entry);
+    localStorage.setItem('fitverse_food_registry', JSON.stringify(loggedFoods));
+    
+    nameInput.value = '';
+    calInput.value = '';
+    
+    rebuildFoodDOMList();
+    triggerAudioFeedback(`Logged ${entry.calories} kilocalories.`);
 }
 
-/* Premium System HUD Header layout */
-.hud-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-neon);
-    padding-bottom: 15px;
-    margin-bottom: 25px;
+function rebuildFoodDOMList() {
+    const targetList = document.getElementById('food-log-list');
+    targetList.innerHTML = '';
+    totalCaloriesConsumed = 0;
+    
+    loggedFoods.forEach(item => {
+        totalCaloriesConsumed += item.calories;
+        const li = document.createElement('li');
+        li.className = 'hud-list-item';
+        li.innerHTML = `<span>${item.name}</span> <span style="color: #00f2fe">${item.calories} KCAL</span>`;
+        targetList.appendChild(li);
+    });
+    
+    document.getElementById('total-calories').textContent = totalCaloriesConsumed;
 }
 
-.system-status {
-    font-size: 0.8rem;
-    color: var(--accent-blue);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* --- Routine Ingestion Logic --- */
+function loadPersonalizedPlan(type) {
+    document.getElementById('routine-plan-content').innerHTML = routinePlans[type];
+    document.getElementById('plan-fatloss').classList.toggle('active', type === 'fat_loss');
+    document.getElementById('plan-muscle').classList.toggle('active', type === 'muscle_gain');
+    triggerAudioFeedback(`Loading ${type.replace('_', ' ')} schematics.`);
 }
 
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-blue);
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
+/* --- Vision Tracking Framework Core --- */
+function setExercise(type) {
+    currentExercise = type;
+    count = 0;
+    position = null;
+    repCounter.textContent = count;
+    updateProgressBar(0);
+    angleLabel.textContent = exerciseRules[type].name;
+    
+    document.getElementById('btn-curl').classList.toggle('active', type === 'bicep_curl');
+    document.getElementById('btn-squat').classList.toggle('active', type === 'squat');
+    triggerAudioFeedback(`Switching tracking parameters to ${type.replace('_', ' ')} logic matrix.`);
 }
 
-.brand-title h1 {
-    font-size: 1.8rem;
-    font-weight: 900;
-    text-align: center;
-    letter-spacing: 0.15em;
-    margin: 0;
-    background: linear-gradient(90deg, #fff, var(--accent-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+function updateProgressBar(percent) {
+    const offset = circumference - (percent / 100) * circumference;
+    progressBar.style.strokeDashoffset = offset;
 }
 
-.brand-title p {
-    font-size: 0.65rem;
-    text-align: center;
-    letter-spacing: 0.4em;
-    color: #4a5a78;
-    margin: 4px 0 0 0;
+function triggerAudioFeedback(text) {
+    if (text === lastSpokenFeedback) return;
+    lastSpokenFeedback = text;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.05;
+    utterance.pitch = 0.9;
+    window.speechSynthesis.speak(utterance);
 }
 
-.system-clock {
-    font-size: 0.8rem;
-    color: #4a5a78;
+function playBeepSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 880;
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    oscillator.start();
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+    oscillator.stop(audioCtx.currentTime + 0.15);
 }
 
-/* Module Selector Controls Bar */
-.module-navigation {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 10px;
+function calculateAngle(p1, p2, p3) {
+    let radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
+    let angle = Math.abs((radians * 180.0) / Math.PI);
+    if (angle > 180.0) angle = 360.0 - angle;
+    return Math.round(angle);
 }
 
-.nav-tab {
-    background: transparent;
-    border: none;
-    color: #4a5a78;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: bold;
-    letter-spacing: 0.1em;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+function onResults(results) {
+    // Only compile pose loops if the Vision module tab workspace is actively visible
+    if (!document.getElementById('module-vision-container').classList.contains('module-visible')) return;
+
+    if (!results.poseLandmarks) {
+        feedbackText.textContent = "BIO-LINK DROP // TARGET REMOVED";
+        feedbackText.className = "status-warn";
+        feedbackCard.className = "metric-card feedback-card status-warn-border";
+        return;
+    }
+
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(0, 242, 254, 0.4)', lineWidth: 2 });
+    drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#ff5f6d', lineWidth: 1, radius: 3 });
+
+    const rule = exerciseRules[currentExercise];
+    const p1 = results.poseLandmarks[rule.nodes[0]];
+    const p2 = results.poseLandmarks[rule.nodes[1]];
+    const p3 = results.poseLandmarks[rule.nodes[2]];
+
+    if (p1 && p2 && p3) {
+        const angle = calculateAngle(p1, p2, p3);
+        angleDisplay.textContent = `${angle}°`;
+
+        let progressPercent = 0;
+        if (position === "down") {
+            const range = rule.extension - rule.flexion;
+            const currentDelta = rule.extension - angle;
+            progressPercent = Math.min(Math.max((currentDelta / range) * 100, 0), 100);
+        }
+        updateProgressBar(progressPercent);
+
+        if (angle > rule.extension) {
+            position = "down";
+            feedbackText.textContent = "EXECUTE FLEXION SEQUENCE";
+            feedbackText.className = "status-good";
+            feedbackCard.className = "metric-card feedback-card status-good-border";
+        }
+        
+        if (angle < rule.flexion && position === "down") {
+            position = "up";
+            count++;
+            repCounter.textContent = count;
+            playBeepSound();
+            updateProgressBar(100);
+            feedbackText.textContent = `CYCLE SUCCESS: COUNT ${count}`;
+            feedbackText.className = "status-good";
+            feedbackCard.className = "metric-card feedback-card status-good-border";
+            triggerAudioFeedback(`${count}`);
+        }
+        
+        if (angle < rule.extension && angle > rule.flexion && position === null) {
+            feedbackText.textContent = "CLEAR SYSTEM BOUNDARY // EXTEND FULLY";
+            feedbackText.className = "status-warn";
+            feedbackCard.className = "metric-card feedback-card status-warn-border";
+            triggerAudioFeedback("Extend body vector fully to engage framework.");
+        }
+    }
 }
 
-.nav-tab.active, .nav-tab:hover {
-    color: var(--accent-blue);
-    text-shadow: var(--neon-glow);
-    border-bottom: 2px solid var(--accent-blue);
-}
+const pose = new Pose({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+});
 
-/* Structural Module View Switching Rule sets */
-.module-visible { display: grid !important; }
-.module-hidden { display: none !important; }
+pose.setOptions({
+    modelComplexity: 1,
+    smoothLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+});
+pose.onResults(onResults);
 
-/* Two Column Work Matrix Grid */
-.main-layout {
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 30px;
-}
-
-/* Tactical Crosshair Camera Overlay */
-.video-box {
-    position: relative;
-    background: var(--bg-card);
-    border: 1px solid var(--border-neon);
-    border-radius: 4px;
-    overflow: hidden;
-    aspect-ratio: 4/3;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
-}
-
-#webcam, #output-canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-    position: absolute;
-}
-
-.scanline {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 4px, 6px 100%;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.hud-corner {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border: 2px solid var(--accent-blue);
-    z-index: 3;
-}
-.top-left { top: 15px; left: 15px; border-right: 0; border-bottom: 0; }
-.top-right { top: 15px; right: 15px; border-left: 0; border-bottom: 0; }
-.bottom-left { bottom: 15px; left: 15px; border-right: 0; border-top: 0; }
-.bottom-right { bottom: 15px; right: 15px; border-left: 0; border-top: 0; }
-
-/* Interactive Cyber Controller Buttons */
-.btn-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 5px;
-}
-
-.hud-btn {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(200,200,200,0.1);
-    color: #4a5a78;
-    padding: 12px;
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: bold;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.hud-btn.active {
-    border-color: var(--accent-blue);
-    color: var(--accent-blue);
-    background: rgba(0, 242, 254, 0.05);
-    box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.2);
-}
-
-.btn-full { grid-column: span 2; margin-top: 10px; }
-
-/* Data Form Controls */
-.hud-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.hud-input {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border-neon);
-    padding: 12px;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.85rem;
-}
-
-.hud-input:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-}
-
-/* Logging Tables & Registries */
-.log-table-wrapper {
-    margin-top: 25px;
-    text-align: left;
-}
-
-.log-table-wrapper h4 {
-    font-size: 0.75rem;
-    color: #4a5a78;
-    letter-spacing: 0.1em;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-}
-
-.hud-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 220px;
-    overflow-y: auto;
-}
-
-.hud-list-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    background: rgba(255,255,255,0.01);
-    border: 1px solid rgba(255,255,255,0.03);
-    margin-bottom: 6px;
-    font-size: 0.8rem;
-}
-
-.diet-chart-summary {
-    text-align: left;
-    font-size: 0.8rem;
-    line-height: 1.8;
-}
-
-.diet-chart-summary p {
-    margin: 8px 0;
-    border-bottom: 1px dashed rgba(255,255,255,0.03);
-    padding-bottom: 4px;
-}
-
-/* Circular Dashboard Progress Elements */
-.progress-container {
-    position: relative;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px 0;
-}
-
-.progress-ring__bar {
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-    transition: stroke-dashoffset 0.15s ease;
-}
-
-.counter {
-    position: absolute;
-    font-size: 3rem;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: var(--neon-glow);
-}
-
-.metric-card {
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.03);
-    border-top: 2px solid rgba(255,255,255,0.1);
-    padding: 20px;
-    text-align: center;
-}
-
-.metric-card h3 {
-    margin: 0 0 12px 0;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    color: #4a5a78;
-}
-
-.angle-display {
-    font-size: 2.8rem;
-    font-weight: bold;
-    color: var(--accent-coral);
-}
-
-.sub-label {
-    font-size: 0.6rem;
-    color: #4a5a78;
-    letter-spacing: 0.1em;
-    margin-top: 4px;
-}
-
-/* Dynamic Live Diagnostics Feedback Framework Cards */
-.status-good-border { border-top: 2px solid var(--accent-blue) !important; }
-.status-warn-border { border-top: 2px solid var(--accent-warn) !important; }
-
-#feedback-text {
-    font-size: 0.95rem;
-    font-weight: bold;
-    letter-spacing: 0.05em;
-}
-
-.status-good { color: #56d364; }
-.status-warn { color: var(--accent-warn); }
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 0.4; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.4; }
-}
+const camera = new Camera(videoElement, {
+    onFrame: async () => { await pose.send({ image: videoElement }); },
+    width: 640, height: 480
+});
+camera.start().then(() => {
+    feedbackText.textContent = "BIO-LINK ENGINE UP // COGNITIVE SHIELD READY";
+    triggerAudioFeedback("System operational. Neural tracking initialized.");
+});
