@@ -2,7 +2,7 @@ const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('output-canvas');
 const canvasCtx = canvasElement.getContext('2d');
 
-// Core Dashboard DOM selectors
+// UI View Document Selectors
 const repCounter = document.getElementById('rep-count');
 const angleDisplay = document.getElementById('joint-angle');
 const angleLabel = document.getElementById('angle-label');
@@ -10,13 +10,13 @@ const feedbackText = document.getElementById('feedback-text');
 const feedbackCard = document.getElementById('feedback-card');
 const progressBar = document.getElementById('rep-progress-bar');
 
-// Circular Progress Dimensions calculation logic
+// Circular Telemetry Progress Gauge Setup
 const radius = progressBar.r.baseVal.value;
 const circumference = radius * 2 * Math.PI;
 progressBar.style.strokeDasharray = `${circumference} ${circumference}`;
 progressBar.style.strokeDashoffset = circumference;
 
-// Core Framework Runtime parameters
+// Application Configuration and State Management Variables
 let currentExercise = 'bicep_curl';
 let count = 0;
 let position = null;
@@ -24,7 +24,7 @@ let lastSpokenFeedback = "";
 let totalCaloriesConsumed = 0;
 let loggedFoods = [];
 
-// Static Biometric evaluation definitions matrix
+// Static Biometric Angle Metrics Parameters Matrix
 const exerciseRules = {
     bicep_curl: { name: "ELBOW JOINTS", nodes: [11, 13, 15], extension: 160, flexion: 45 },
     squat: { name: "KNEE JOINTS", nodes: [23, 25, 27], extension: 160, flexion: 90 }
@@ -32,25 +32,25 @@ const exerciseRules = {
 
 const routinePlans = {
     fat_loss: `
-        <p><strong>DAY 1:</strong> AI Squat Matrix (4 Sets x 20 Reps)</p>
-        <p><strong>DAY 2:</strong> High Velocity Bicep Flexion (4 Sets x 25 Reps)</p>
-        <p><strong>DAY 3:</strong> Metabolic Acceleration Drills (30 Mins)</p>
-        <p><strong>SYSTEM METRIC:</strong> Target rapid velocity to maximize output.</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 1:</strong> AI Squat Performance Engine (4 Sets x 20 Reps)</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 2:</strong> High Velocity Bicep Curl Burn (4 Sets x 25 Reps)</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 3:</strong> High-Burn Aerobic Acceleration Interval (30 Mins)</p>
+        <p><strong>CORE GOAL:</strong> High repetition density to drive metabolic unit expenditure.</p>
     `,
     muscle_gain: `
-        <p><strong>DAY 1:</strong> Progressive Tension Squat Layer (4 Sets x 10 Hyper-Controlled Reps)</p>
-        <p><strong>DAY 2:</strong> Mechanical Tension Bicep Curls (4 Sets x 12 Slow Reps)</p>
-        <p><strong>DAY 3:</strong> Structural Compound Loading (Compound focuses)</p>
-        <p><strong>SYSTEM METRIC:</strong> Prioritize slow, steady movement vector synchronization.</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 1:</strong> High Mechanical Tension Squat Deck (4 Sets x 10 Hyper-Controlled Reps)</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 2:</strong> Slow-Eccentric Isolate Bicep Curls (4 Sets x 12 Slow Reps)</p>
+        <p><span class="badge-dot bg-green"></span> <strong>DAY 3:</strong> Upper-Body Hypertrophy Load Manifest (Chest Focus)</p>
+        <p><strong>CORE GOAL:</strong> Maximized time under tension to optimize target strain vectors.</p>
     `
 };
 
-// Continuous clock tick callback function execution routing
+// Continuous Clock Tracking Loop
 setInterval(() => {
     document.getElementById('system-time').textContent = new Date().toUTCString().replace("GMT", "UTC");
 }, 1000);
 
-// Initialize application state hook
+// App Lifecycle Initializer Hook
 window.onload = function() {
     loadPersonalizedPlan('fat_loss');
     initializeLocalStorageLogs();
@@ -58,7 +58,7 @@ window.onload = function() {
     loadProfileManifest();
 };
 
-/* --- 5-Page Navigation Tab Management Engine --- */
+/* --- 5-Page Navigation Switching Controller Engine --- */
 function switchModule(moduleName) {
     const modules = ['vision', 'nutrition', 'routines', 'analytics', 'config'];
     modules.forEach(m => {
@@ -75,10 +75,10 @@ function switchModule(moduleName) {
         }
     });
     syncAnalyticsDashboard();
-    triggerAudioFeedback(`Accessing ${moduleName} module.`);
+    triggerAudioFeedback(`Accessing ${moduleName} workspace.`);
 }
 
-/* --- Calorie Engine Storage Logic --- */
+/* --- Calorie Log Storage and Data Ingestion Engines --- */
 function initializeLocalStorageLogs() {
     const cachedLogs = localStorage.getItem('fitverse_food_registry');
     if (cachedLogs) {
@@ -118,28 +118,28 @@ function rebuildFoodDOMList() {
         totalCaloriesConsumed += item.calories;
         const li = document.createElement('li');
         li.className = 'hud-list-item';
-        li.innerHTML = `<span>${item.name}</span> <span style="color: #00f5a0">${item.calories} KCAL</span>`;
+        li.innerHTML = `<span>${item.name}</span> <span class="text-green">${item.calories} KCAL</span>`;
         targetList.appendChild(li);
     });
     
     document.getElementById('total-calories').textContent = totalCaloriesConsumed;
 }
 
-/* --- Routine Handling Logic --- */
+/* --- Routine Configuration Loader --- */
 function loadPersonalizedPlan(type) {
     document.getElementById('routine-plan-content').innerHTML = routinePlans[type];
     document.getElementById('plan-fatloss').classList.toggle('active', type === 'fat_loss');
     document.getElementById('plan-muscle').classList.toggle('active', type === 'muscle_gain');
-    triggerAudioFeedback(`Loading ${type.replace('_', ' ')} parameters.`);
+    triggerAudioFeedback(`Loading ${type.replace('_', ' ')} structural metrics.`);
 }
 
-/* --- Analytics Reporting Synchronization (New) --- */
+/* --- Analytics Reporting Synchronization --- */
 function syncAnalyticsDashboard() {
     document.getElementById('analytics-total-reps').textContent = count;
     document.getElementById('analytics-calories').textContent = `${totalCaloriesConsumed} kcal`;
 }
 
-/* --- User Profile Management Core (New) --- */
+/* --- User profile Configuration Manifest Engines --- */
 function saveProfileConfig(event) {
     event.preventDefault();
     const nameVal = document.getElementById('user-name-input').value.toUpperCase();
@@ -182,7 +182,7 @@ function setExercise(type) {
     
     document.getElementById('btn-curl').classList.toggle('active', type === 'bicep_curl');
     document.getElementById('btn-squat').classList.toggle('active', type === 'squat');
-    triggerAudioFeedback(`Switching matching limits to ${type.replace('_', ' ')} layer.`);
+    triggerAudioFeedback(`Switching analysis to ${type.replace('_', ' ')} constraints.`);
 }
 
 function updateProgressBar(percent) {
@@ -195,7 +195,7 @@ function triggerAudioFeedback(text) {
     lastSpokenFeedback = text;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
-    utterance.pitch = 0.9;
+    utterance.pitch = 0.95;
     window.speechSynthesis.speak(utterance);
 }
 
@@ -207,10 +207,10 @@ function playBeepSound() {
     gainNode.connect(audioCtx.destination);
     oscillator.type = 'sine';
     oscillator.frequency.value = 880;
-    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
     oscillator.start();
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-    oscillator.stop(audioCtx.currentTime + 0.15);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+    oscillator.stop(audioCtx.currentTime + 0.12);
 }
 
 function calculateAngle(p1, p2, p3) {
@@ -224,7 +224,7 @@ function onResults(results) {
     if (!document.getElementById('module-vision-container').classList.contains('module-visible')) return;
 
     if (!results.poseLandmarks) {
-        feedbackText.textContent = "BIO-LINK DROP // TARGET REMOVED";
+        feedbackText.textContent = "BIO-LINK DROP // TARGET UNRESOLVED";
         feedbackText.className = "status-warn";
         feedbackCard.className = "metric-card feedback-card status-warn-border";
         return;
@@ -235,8 +235,9 @@ function onResults(results) {
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(0, 242, 254, 0.4)', lineWidth: 2 });
-    drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#ff5f6d', lineWidth: 1, radius: 3 });
+    // Render Skeletal Mesh Vectors with highly precise accent transparency
+    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(0, 242, 254, 0.35)', lineWidth: 2 });
+    drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#ff5f6d', lineWidth: 1, radius: 2.5 });
 
     const rule = exerciseRules[currentExercise];
     const p1 = results.poseLandmarks[rule.nodes[0]];
@@ -257,7 +258,7 @@ function onResults(results) {
 
         if (angle > rule.extension) {
             position = "down";
-            feedbackText.textContent = "EXECUTE FLEXION SEQUENCE";
+            feedbackText.textContent = "EXECUTE FLEXION RECOVERY MOVEMENT";
             feedbackText.className = "status-good";
             feedbackCard.className = "metric-card feedback-card status-good-border";
         }
@@ -269,17 +270,17 @@ function onResults(results) {
             playBeepSound();
             updateProgressBar(100);
             syncAnalyticsDashboard();
-            feedbackText.textContent = `CYCLE SUCCESS: COUNT ${count}`;
+            feedbackText.textContent = `TARGET ACQUIRED // COUNT INCREASED: ${count}`;
             feedbackText.className = "status-good";
             feedbackCard.className = "metric-card feedback-card status-good-border";
             triggerAudioFeedback(`${count}`);
         }
         
         if (angle < rule.extension && angle > rule.flexion && position === null) {
-            feedbackText.textContent = "CLEAR SYSTEM BOUNDARY // EXTEND FULLY";
+            feedbackText.textContent = "INITIALIZE STATE VECTOR // EXTEND JOINT FULLY";
             feedbackText.className = "status-warn";
             feedbackCard.className = "metric-card feedback-card status-warn-border";
-            triggerAudioFeedback("Extend body vector fully to engage framework.");
+            triggerAudioFeedback("Extend body vectors fully to calibrate engine.");
         }
     }
 }
@@ -301,6 +302,6 @@ const camera = new Camera(videoElement, {
     width: 640, height: 480
 });
 camera.start().then(() => {
-    feedbackText.textContent = "BIO-LINK ENGINE UP // COGNITIVE SHIELD READY";
-    triggerAudioFeedback("System operational. Neural tracking initialized.");
+    feedbackText.textContent = "CORE TRANSLATION INTERFACE ONLINE";
+    triggerAudioFeedback("Fitverse Quantum operational.");
 });
